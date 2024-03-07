@@ -1,0 +1,13 @@
+{
+    "javascript.preferences.importModuleSpecifier": "non-relative",
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+    "editor.codeActionsOnSave": { "source.fixAll": "always" },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "files.exclude": {
+        "pnpm-lock.yaml": true,
+        "**/node_modules": true,
+        "**/.turbo": true,
+        "**/.build": true
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "es2018",
+        "lib": ["esnext"],
+        "module": "esnext",
+        "rootDir": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "skipDefaultLibCheck": true,
+        "skipLibCheck": true
+    }
+}
