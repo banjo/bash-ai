@@ -1,4 +1,5 @@
 import { defineCommand } from "citty";
+import clipboard from "clipboardy";
 import "dotenv/config";
 import OpenAI from "openai";
 import { Stream } from "openai/streaming";
@@ -8,24 +9,24 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const stripRegexPatterns = (
-    inputString: string,
-    patternList: (RegExp | string | undefined)[]
-) =>
-    patternList.reduce(
-        (currentString: string, pattern) =>
-            pattern ? currentString.replaceAll(pattern, "") : currentString,
-        inputString
-    );
-
-const shellCodeExclusions = [/```[a-z]*\n/gi, /```[a-z]*/gi, "\n"]; // remove for example ```js\n and ```js
-
 const aiRules = [
     "assume all code question are bash commands.",
     "do not write code in markdown code blocks",
     "code should be ready to copy and run directly in the terminal.",
     "only provide the code, no explanation or comments.",
 ];
+
+type CreateChatCompletionParams = {
+    messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[];
+    model: OpenAI.Chat.Completions.ChatCompletionCreateParams["model"];
+};
+
+const createChatStream = async ({ messages, model }: CreateChatCompletionParams) =>
+    openai.chat.completions.create({
+        model,
+        stream: true,
+        messages,
+    });
 
 export const main = defineCommand({
     meta: {
@@ -46,9 +47,7 @@ export const main = defineCommand({
         helloWorld: () => import("@/commands/hello-world").then(m => m.helloWorldCommand),
     },
     run: async ({ args }) => {
-        const response = await openai.chat.completions.create({
-            model: "gpt-4-turbo-preview",
-            stream: true,
+        const stream = await createChatStream({
             messages: [
                 {
                     role: "system",
@@ -56,18 +55,22 @@ export const main = defineCommand({
                 },
                 {
                     role: "user",
-                    content: "How do I create a new file with Python?",
+                    content: "How do I create a patch from a commit in git?",
                 },
             ],
+            model: "gpt-4-turbo-preview",
         });
 
-        await streamHandler(response, {
+        let fullAnswer = "";
+        await streamHandler(stream, {
             onText: text => {
-                // const strippedText = stripRegexPatterns(text, shellCodeExclusions);
+                fullAnswer += text;
                 process.stdout.write(text);
-                // console.log(text);
             },
-            onEnd: () => process.stdout.write("\n"),
+            onEnd: () => {
+                process.stdout.write("\n");
+                clipboard.writeSync(fullAnswer);
+            },
         });
     },
 });
