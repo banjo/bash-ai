@@ -2,7 +2,9 @@
 
 [![NPM version](https://img.shields.io/npm/v/bash-ai?color=%23c53635&label=%20)](https://www.npmjs.com/package/bash-ai)
 
-A simple CLI application template.
+A simple CLI to help you with bash using Open AI. 
+
+![usage](https://i.imgur.com/B0FqJ07.gif)
 
 ## Install
 
@@ -12,10 +14,12 @@ npm install bash-ai -g
 
 ## Usage
 
-```bash
-# run
-bash-ai
+> On first use, you will be prompted to enter your Open AI API key. 
 
-# run subcommand
-bash-ai subcommand <name>
+```bash
+# run (with prompt)
+ai
+
+# run directly
+ai "how do I list files in a directory?"
 ```
