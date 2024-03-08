@@ -1,6 +1,7 @@
 import { bash } from "@/commands/bash";
+import { createConfig, getConfig } from "@/config";
 import { isSubCommand, title } from "@/utils";
-import { intro, outro } from "@clack/prompts";
+import { intro, isCancel, outro, text } from "@clack/prompts";
 import { defineCommand, runCommand } from "citty";
 import { version } from "../package.json";
 
@@ -21,6 +22,21 @@ export const main = defineCommand({
     },
     setup: async ctx => {
         intro(title("bash-ai"));
+
+        const config = getConfig();
+        if (!config?.OPENAI_API_KEY) {
+            const key = await text({
+                message: "You need to set a OPENAI_API_KEY to continue.",
+            });
+
+            if (isCancel(key)) {
+                outro(title("Goodbye!"));
+                process.exit(0);
+            }
+
+            createConfig({ OPENAI_API_KEY: key });
+        }
+
         if (isSubCommand(ctx)) return;
         if (ctx.cmd.run) await ctx.cmd.run(ctx);
     },

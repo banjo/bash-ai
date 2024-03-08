@@ -1,11 +1,15 @@
-import { stripRegexPatterns } from "@/utils";
-import { defaults } from "@banjoanton/utils";
+import { getConfig } from "@/config";
+import { stripRegexPatterns, title } from "@/utils";
+import { defaults, wrapAsync } from "@banjoanton/utils";
+import { log, outro } from "@clack/prompts";
 import "dotenv/config";
 import OpenAI from "openai";
 import { Stream } from "openai/streaming";
 
+const config = getConfig();
+
 export const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: config?.OPENAI_API_KEY,
 });
 
 const DEFAULT_AI_MODEL = "gpt-4-turbo-preview";
@@ -31,11 +35,25 @@ const DEFAULT_CHAT_COMPLETION_PARAMS = {
 export const createChatStream = async (props: CreateChatCompletionParams) => {
     const { messages, model, rules } = defaults(props, DEFAULT_CHAT_COMPLETION_PARAMS);
 
-    return await openai.chat.completions.create({
-        model,
-        stream: true,
-        messages: [{ role: "system", content: [...GENERAL_RULES, rules].join("\n") }, ...messages],
-    });
+    const [stream, error] = await wrapAsync(
+        async () =>
+            await openai.chat.completions.create({
+                model,
+                stream: true,
+                messages: [
+                    { role: "system", content: [...GENERAL_RULES, rules].join("\n") },
+                    ...messages,
+                ],
+            })
+    );
+
+    if (error) {
+        log.error(error.message);
+        outro(title("Goodbye!"));
+        process.exit(1);
+    }
+
+    return stream;
 };
 
 type Options = {
