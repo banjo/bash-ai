@@ -1,102 +1,48 @@
-import { defineCommand } from "citty";
-import clipboard from "clipboardy";
-import "dotenv/config";
-import OpenAI from "openai";
-import { Stream } from "openai/streaming";
+import { bash } from "@/commands/bash";
+import { isSubCommand, title } from "@/utils";
+import { intro, outro } from "@clack/prompts";
+import { defineCommand, runCommand } from "citty";
 import { version } from "../package.json";
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-
-const aiRules = [
-    "assume all code question are bash commands.",
-    "do not write code in markdown code blocks",
-    "code should be ready to copy and run directly in the terminal.",
-    "only provide the code, no explanation or comments.",
-];
-
-type CreateChatCompletionParams = {
-    messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[];
-    model: OpenAI.Chat.Completions.ChatCompletionCreateParams["model"];
-};
-
-const createChatStream = async ({ messages, model }: CreateChatCompletionParams) =>
-    openai.chat.completions.create({
-        model,
-        stream: true,
-        messages,
-    });
+let runDefaultCommand = false;
 
 export const main = defineCommand({
     meta: {
-        name: "cl-ai",
+        name: "CL-AI",
         version,
-        description: "Example CLI",
+        description: "A CLI for AI commands",
     },
     args: {
-        dev: {
-            type: "boolean",
-            description: "Run in development mode",
+        input: {
+            type: "positional",
             required: false,
-            default: false,
-            alias: "d",
+            description: "A question to ask the AI.",
         },
     },
-    subCommands: {
-        helloWorld: () => import("@/commands/hello-world").then(m => m.helloWorldCommand),
+    setup: async ctx => {
+        intro(title("CL-AI"));
+        if (isSubCommand(ctx)) return;
+        if (ctx.cmd.run) await ctx.cmd.run(ctx);
     },
-    run: async ({ args }) => {
-        const stream = await createChatStream({
-            messages: [
-                {
-                    role: "system",
-                    content: aiRules.join("\n"),
-                },
-                {
-                    role: "user",
-                    content: "How do I create a patch from a commit in git?",
-                },
-            ],
-            model: "gpt-4-turbo-preview",
-        });
+    subCommands: {
+        bash,
+    },
+    cleanup: async ctx => {
+        // If the command is a sub command and has an input, do not show usage
+        if (isSubCommand(ctx) || ctx.args.input || runDefaultCommand) {
+            outro(title("Goodbye!"));
+            process.exit(0);
+        }
+    },
+    run: async ctx => {
+        if (isSubCommand(ctx) || runDefaultCommand) return;
+        runDefaultCommand = true;
 
-        let fullAnswer = "";
-        await streamHandler(stream, {
-            onText: text => {
-                fullAnswer += text;
-                process.stdout.write(text);
-            },
-            onEnd: () => {
-                process.stdout.write("\n");
-                clipboard.writeSync(fullAnswer);
-            },
+        // @ts-ignore
+        await runCommand(ctx.cmd.subCommands?.bash, {
+            rawArgs: ctx.rawArgs,
+            data: ctx.data,
+            showUsage: false,
         });
     },
 });
-
-type Callbacks = {
-    onText?: (text: string) => void;
-    onStart?: () => void;
-    onEnd?: () => void;
-};
-
-async function streamHandler(
-    stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk>,
-    callbacks: Callbacks
-) {
-    let started = false;
-    for await (const chunk of stream) {
-        if (!started && callbacks.onStart) {
-            callbacks.onStart();
-            started = true;
-        }
-        const content = chunk.choices[0]?.delta?.content;
-        if (content && callbacks.onText) {
-            callbacks.onText(content);
-        }
-    }
-    if (callbacks.onEnd) {
-        callbacks.onEnd();
-    }
-}
