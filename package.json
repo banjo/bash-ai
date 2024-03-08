@@ -1,17 +1,17 @@
 {
-    "name": "cl-ai",
+    "name": "bash-ai",
     "type": "module",
     "version": "0.0.1",
     "private": false,
     "description": "",
     "author": "Anton Ödman <anton.odman@gmail.com>",
     "license": "MIT",
-    "homepage": "https://github.com/banjo/cl-ai#readme",
+    "homepage": "https://github.com/banjo/bash-ai#readme",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/banjo/cl-ai.git"
+        "url": "git+https://github.com/banjo/bash-ai.git"
     },
-    "bugs": "https://github.com/banjo/cl-ai/issues",
+    "bugs": "https://github.com/banjo/bash-ai/issues",
     "keywords": [],
     "sideEffects": false,
     "main": "dist/index.js",

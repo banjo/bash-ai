@@ -8,7 +8,7 @@ let runDefaultCommand = false;
 
 export const main = defineCommand({
     meta: {
-        name: "CL-AI",
+        name: "bash-ai",
         version,
         description: "A CLI for AI commands",
     },
@@ -20,7 +20,7 @@ export const main = defineCommand({
         },
     },
     setup: async ctx => {
-        intro(title("CL-AI"));
+        intro(title("bash-ai"));
         if (isSubCommand(ctx)) return;
         if (ctx.cmd.run) await ctx.cmd.run(ctx);
     },

@@ -1,21 +1,21 @@
-# cl-ai
+# bash-ai
 
-[![NPM version](https://img.shields.io/npm/v/cl-ai?color=%23c53635&label=%20)](https://www.npmjs.com/package/cl-ai)
+[![NPM version](https://img.shields.io/npm/v/bash-ai?color=%23c53635&label=%20)](https://www.npmjs.com/package/bash-ai)
 
 A simple CLI application template.
 
 ## Install
 
 ```bash
-npm install cl-ai -g
+npm install bash-ai -g
 ```
 
 ## Usage
 
 ```bash
 # run
-cl-ai
+bash-ai
 
 # run subcommand
-cl-ai subcommand <name>
+bash-ai subcommand <name>
 ```
