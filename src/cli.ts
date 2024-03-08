@@ -1,5 +1,6 @@
 import { bash } from "@/commands/bash";
 import { config } from "@/commands/config";
+import { update } from "@/commands/update";
 import { createConfig, getConfig } from "@/config";
 import { isSubCommand, title } from "@/utils";
 import { intro, isCancel, outro, text } from "@clack/prompts";
@@ -44,6 +45,7 @@ export const main = defineCommand({
     subCommands: {
         bash,
         config,
+        update,
     },
     cleanup: async ctx => {
         // If the command is a sub command and has an input, do not show usage
