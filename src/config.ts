@@ -3,18 +3,18 @@ import { readUser, writeUser } from "rc9";
 
 const FILE_NAME = ".bash-ai";
 
-export const CONFIG_FIELDS = ["OPENAI_API_KEY"] as const;
-export type ConfigFields = (typeof CONFIG_FIELDS)[number];
+export const CONFIG_FIELDS = ["OPENAI_API_KEY", "MODEL"] as const;
+export type ConfigField = (typeof CONFIG_FIELDS)[number];
 
 export const ConfigFields = CONFIG_FIELDS.reduce(
     (acc, field) => {
         acc[field] = field;
         return acc;
     },
-    {} as Record<ConfigFields, ConfigFields>
+    {} as Record<ConfigField, ConfigField>
 );
 
-type Config = Record<ConfigFields, string>;
+type Config = Record<ConfigField, string>;
 
 export const Config = {
     fromRecord: (record: Record<string, any>) => {

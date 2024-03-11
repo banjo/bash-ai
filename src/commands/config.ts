@@ -1,5 +1,5 @@
-import { Config, ConfigFields, getConfig, updateConfig } from "@/config";
-import { isEmpty, truncate } from "@banjoanton/utils";
+import { ConfigField, ConfigFields, getConfig, updateConfig } from "@/config";
+import { truncate } from "@banjoanton/utils";
 import { isCancel, log, select, text } from "@clack/prompts";
 import { defineCommand } from "citty";
 
@@ -8,24 +8,10 @@ export const config = defineCommand({
         name: "Config",
         description: "Set configuration for the CLI.",
     },
-    args: {
-        openai: {
-            type: "string",
-            description: "Set the OpenAI API key.",
-        },
-    },
-    async run(ctx) {
-        const entries = Object.entries(ctx.args).filter(([key]) => key !== "_");
-        if (!isEmpty(entries)) {
-            const options = Object.fromEntries(entries);
-            const updatedConfig = Config.fromRecord(options);
-            updateConfig(updatedConfig);
-            return;
-        }
-
+    async run() {
         const currentConfig = getConfig();
 
-        const answer = await select({
+        const answer: ConfigField | symbol = await select({
             message: "Select a configuration to update:",
             options: [
                 {
@@ -33,21 +19,24 @@ export const config = defineCommand({
                     value: ConfigFields.OPENAI_API_KEY,
                     hint: truncate(currentConfig?.OPENAI_API_KEY ?? "", 3),
                 },
+                {
+                    label: "Model",
+                    value: ConfigFields.MODEL,
+                    hint: currentConfig?.MODEL ?? "gpt-4-turbo-preview",
+                },
             ],
         });
 
         if (isCancel(answer)) return;
 
-        const selected = answer as string;
-
         const key = await text({
-            message: `Set the new value for ${selected}`,
-            initialValue: currentConfig?.OPENAI_API_KEY ?? "",
+            message: `Set the new value for ${answer}`,
+            placeholder: currentConfig?.[answer] ?? "",
         });
 
         if (isCancel(key)) return;
 
-        updateConfig({ [selected]: key });
+        updateConfig({ [answer]: key });
         log.success("Configuration updated!");
     },
 });

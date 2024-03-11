@@ -1,3 +1,4 @@
+import { getConfig } from "@/config";
 import { createChatStream, streamHandler } from "@/openai";
 import { content, toned } from "@/utils";
 import { isCancel, log, spinner, text } from "@clack/prompts";
@@ -40,9 +41,12 @@ export const bash = defineCommand({
             return;
         }
 
+        const config = getConfig();
+
         const stream = await createChatStream({
             messages: [{ role: "user", content: userInput }],
             rules: BASH_RULES,
+            model: config?.MODEL,
         });
 
         const s = spinner();
