@@ -1,5 +1,6 @@
 import { getConfig } from "@/config";
 import { DEFAULT_AI_MODEL, GENERAL_RULES, openai } from "@/openai";
+import { Message } from "@/types";
 import { content } from "@/utils";
 import { Maybe } from "@banjoanton/utils";
 import { isCancel, spinner, text } from "@clack/prompts";
@@ -7,11 +8,6 @@ import { generateText } from "ai";
 import { defineCommand } from "citty";
 
 const RULES: string[] = [];
-
-type Message = {
-    role: "user" | "system";
-    content: string;
-};
 
 export const chat = defineCommand({
     meta: {
