@@ -6,9 +6,10 @@ import { isSubCommand, title } from "@/utils";
 import { intro, isCancel, outro, select, text } from "@clack/prompts";
 import { defineCommand, runCommand } from "citty";
 import { version } from "../package.json";
-import { DEFAULT_AI_MODEL } from "./openai";
 import { ask } from "./commands/ask";
 import { chat } from "./commands/chat";
+import { DEFAULT_AI_MODEL } from "./openai";
+import { fileArgs } from "./files";
 
 let runDefaultCommand = false;
 
@@ -32,6 +33,7 @@ export const main = defineCommand({
             required: false,
             description: "A question to ask the AI.",
         },
+        ...fileArgs,
     },
     setup: async ctx => {
         intro(title("bash-ai"));

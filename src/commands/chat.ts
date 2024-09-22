@@ -1,4 +1,5 @@
 import { getConfig } from "@/config";
+import { fileArgs, handleFiles } from "@/files";
 import { DEFAULT_AI_MODEL, GENERAL_RULES, openai } from "@/openai";
 import { Message } from "@/types";
 import { content } from "@/utils";
@@ -20,9 +21,10 @@ export const chat = defineCommand({
             required: false,
             description: "A question to ask the AI.",
         },
+        ...fileArgs,
     },
     async run(ctx) {
-        const { input } = ctx.args;
+        const { input, files, filesMax } = ctx.args;
         const config = getConfig();
         const model = config?.MODEL ?? DEFAULT_AI_MODEL;
         const messages: Message[] = [
@@ -31,6 +33,11 @@ export const chat = defineCommand({
                 content: [...GENERAL_RULES, ...RULES].join("\n"),
             },
         ];
+
+        if (files) {
+            const filesMessage = await handleFiles(files, filesMax);
+            messages.push(filesMessage);
+        }
 
         let firstInput: Maybe<string | symbol> = input;
         while (true) {

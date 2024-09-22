@@ -1,5 +1,7 @@
 import { getConfig } from "@/config";
+import { fileArgs, handleFiles } from "@/files";
 import { DEFAULT_AI_MODEL, GENERAL_RULES, openai } from "@/openai";
+import { Message } from "@/types";
 import { content, toned } from "@/utils";
 import { isCancel, log, spinner, text } from "@clack/prompts";
 import { generateText } from "ai";
@@ -26,9 +28,21 @@ export const bash = defineCommand({
             required: false,
             description: "A question to ask the AI.",
         },
+        ...fileArgs,
     },
     async run(ctx) {
-        const { input } = ctx.args;
+        const { input, files, filesMax } = ctx.args;
+        const messages: Message[] = [
+            {
+                role: "system",
+                content: [...GENERAL_RULES, ...BASH_RULES].join("\n"),
+            },
+        ];
+
+        if (files) {
+            log.error(toned("Files are not supported in bash command."));
+            return;
+        }
 
         let userInput: string | symbol = input;
 
@@ -40,6 +54,8 @@ export const bash = defineCommand({
             return;
         }
 
+        messages.push({ role: "user", content: userInput });
+
         const config = getConfig();
         const model = config?.MODEL ?? DEFAULT_AI_MODEL;
 
@@ -47,8 +63,7 @@ export const bash = defineCommand({
         s.start("Thinking...");
         const { text: responseText } = await generateText({
             model: openai(model),
-            system: [...GENERAL_RULES, ...BASH_RULES].join(","),
-            prompt: userInput,
+            messages,
         });
 
         if (responseText === UNRELATED_QUESTION) {

@@ -1,7 +1,11 @@
 import { getConfig } from "@/config";
+import { fileArgs, handleFiles } from "@/files";
 import { DEFAULT_AI_MODEL, GENERAL_RULES, openai } from "@/openai";
-import { content } from "@/utils";
-import { isCancel, spinner, text } from "@clack/prompts";
+import { Message } from "@/types";
+import { content, filesToMessage, loadFiles } from "@/utils";
+import { parseNumber } from "@banjoanton/utils";
+
+import { isCancel, log, spinner, text } from "@clack/prompts";
 import { generateText } from "ai";
 import { defineCommand } from "citty";
 
@@ -24,9 +28,24 @@ export const ask = defineCommand({
             required: false,
             description: "A question to ask the AI.",
         },
+        ...fileArgs,
     },
     async run(ctx) {
-        const { input } = ctx.args;
+        const { input, files, filesMax } = ctx.args;
+        const config = getConfig();
+        const model = config?.MODEL ?? DEFAULT_AI_MODEL;
+
+        const messages: Message[] = [
+            {
+                role: "system",
+                content: [...GENERAL_RULES, ...ASK_RULES].join("\n"),
+            },
+        ];
+
+        if (files) {
+            const filesMessage = await handleFiles(files, filesMax);
+            messages.push(filesMessage);
+        }
 
         let userInput: string | symbol = input;
 
@@ -38,20 +57,13 @@ export const ask = defineCommand({
             return;
         }
 
-        const config = getConfig();
-        const model = config?.MODEL ?? DEFAULT_AI_MODEL;
+        messages.push({ role: "user", content: userInput });
 
         const s = spinner();
         s.start("Thinking...");
         const { text: responseText } = await generateText({
             model: openai(model),
-            messages: [
-                {
-                    role: "system",
-                    content: [...GENERAL_RULES, ...ASK_RULES].join("\n"),
-                },
-                { role: "user", content: userInput },
-            ],
+            messages,
         });
 
         s.stop(`Response:\n ${content(responseText)}`);
