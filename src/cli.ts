@@ -8,12 +8,14 @@ import { defineCommand, runCommand } from "citty";
 import { version } from "../package.json";
 import { DEFAULT_AI_MODEL } from "./openai";
 import { ask } from "./commands/ask";
+import { chat } from "./commands/chat";
 
 let runDefaultCommand = false;
 
 const subCommands = {
     ask,
     bash,
+    chat,
     config,
     update,
 };
@@ -69,6 +71,7 @@ export const main = defineCommand({
             options: [
                 { label: "Ask a question", value: "ask" },
                 { label: "Ask a bash command", value: "bash" },
+                { label: "Chat with AI", value: "chat" },
                 { label: "Set configuration", value: "config" },
                 { label: "Update the CLI", value: "update" },
             ],

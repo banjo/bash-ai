@@ -16,7 +16,7 @@ export const config = defineCommand({
             message: "Select a configuration to update:",
             options: [
                 {
-                    label: "OpenAI KEY",
+                    label: "OpenAI key",
                     value: ConfigFields.OPENAI_API_KEY,
                     hint: truncate(currentConfig?.OPENAI_API_KEY ?? "", 3),
                 },
