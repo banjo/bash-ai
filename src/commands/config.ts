@@ -1,4 +1,5 @@
 import { ConfigField, ConfigFields, getConfig, updateConfig } from "@/config";
+import { DEFAULT_AI_MODEL } from "@/openai";
 import { truncate } from "@banjoanton/utils";
 import { isCancel, log, select, text } from "@clack/prompts";
 import { defineCommand } from "citty";
@@ -22,7 +23,7 @@ export const config = defineCommand({
                 {
                     label: "Model",
                     value: ConfigFields.MODEL,
-                    hint: currentConfig?.MODEL ?? "gpt-4-turbo-preview",
+                    hint: currentConfig?.MODEL ?? DEFAULT_AI_MODEL,
                 },
             ],
         });

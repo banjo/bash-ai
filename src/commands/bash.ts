@@ -1,7 +1,8 @@
 import { getConfig } from "@/config";
-import { createChatStream, streamHandler } from "@/openai";
+import { DEFAULT_AI_MODEL, GENERAL_RULES, openai } from "@/openai";
 import { content, toned } from "@/utils";
 import { isCancel, log, spinner, text } from "@clack/prompts";
+import { generateText } from "ai";
 import { defineCommand } from "citty";
 import clipboard from "clipboardy";
 
@@ -30,10 +31,8 @@ export const bash = defineCommand({
         const { input } = ctx.args;
 
         let userInput: string | symbol = input;
-        let hasPrompted = false;
 
         if (!userInput) {
-            hasPrompted = true;
             userInput = await text({ message: "What do you want to ask AI about bash?" });
         }
 
@@ -42,32 +41,24 @@ export const bash = defineCommand({
         }
 
         const config = getConfig();
-
-        const stream = await createChatStream({
-            messages: [{ role: "user", content: userInput }],
-            rules: BASH_RULES,
-            model: config?.MODEL,
-        });
+        const model = config?.MODEL ?? DEFAULT_AI_MODEL;
 
         const s = spinner();
-
-        await streamHandler(stream, {
-            onStart: () => {
-                if (!hasPrompted) {
-                    log.info(toned(userInput as string));
-                }
-                s.start("Thinking...");
-            },
-
-            onEnd: text => {
-                if (text === UNRELATED_QUESTION) {
-                    log.error(toned("This question is not related to bash."));
-                    return;
-                }
-                s.stop(content(text));
-                clipboard.writeSync(text);
-                log.info(toned("Copied to clipboard!"));
-            },
+        s.start("Thinking...");
+        const { text: responseText } = await generateText({
+            model: openai(model),
+            system: [...GENERAL_RULES, ...BASH_RULES].join(","),
+            prompt: userInput,
         });
+
+        if (responseText === UNRELATED_QUESTION) {
+            s.stop("Oops!");
+            log.error(toned("This question is not related to bash."));
+            return;
+        }
+
+        s.stop(content(responseText));
+        clipboard.writeSync(responseText);
+        log.info(toned("Copied to clipboard!"));
     },
 });

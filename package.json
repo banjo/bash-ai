@@ -35,14 +35,14 @@
         "format": "prettier --write ."
     },
     "dependencies": {
-        "ai": "^3.0.7",
+        "@ai-sdk/openai": "^0.0.61",
+        "@clack/prompts": "^0.7.0",
+        "ai": "^3.4.0",
         "citty": "^0.1.6",
         "clipboardy": "^4.0.0",
         "dotenv": "^16.4.5",
         "execa": "^8.0.1",
-        "openai": "^4.28.4",
         "picocolors": "^1.0.0",
-        "@clack/prompts": "^0.7.0",
         "rc9": "^2.1.1"
     },
     "devDependencies": {
