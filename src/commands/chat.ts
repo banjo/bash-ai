@@ -5,7 +5,7 @@ import { Message } from "@/types";
 import { content } from "@/utils";
 import { Maybe } from "@banjoanton/utils";
 import { isCancel, spinner, text } from "@clack/prompts";
-import { generateText } from "ai";
+import { streamText } from "ai";
 import { defineCommand } from "citty";
 
 const RULES: string[] = [];
@@ -55,12 +55,21 @@ export const chat = defineCommand({
             messages.push({ role: "user", content: userInput });
             const s = spinner();
             s.start("Thinking...");
-            const { text: responseText } = await generateText({
+
+            const { textStream } = await streamText({
                 model: openai(model),
                 messages,
             });
 
-            s.stop(`Response:\n ${content(responseText)}`);
+            let first = true;
+            for await (const textPart of textStream) {
+                if (first) {
+                    first = false;
+                    s.stop("Response: ");
+                }
+                process.stdout.write(textPart);
+            }
+            process.stdout.write("\n");
         }
     },
 });
